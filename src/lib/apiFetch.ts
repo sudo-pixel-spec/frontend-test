@@ -3,9 +3,18 @@ import { endpoints } from "./endpoints";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL!;
 
-type FetchOptions = RequestInit & {
+type Json =
+  | null
+  | boolean
+  | number
+  | string
+  | Json[]
+  | { [key: string]: Json };
+
+type FetchOptions = Omit<RequestInit, "body"> & {
   retryOn401?: boolean;
   auth?: boolean;
+  body?: Json | FormData | Blob | ArrayBuffer | string;
 };
 
 type OkShape<T = any> = { ok: true; data: T };
