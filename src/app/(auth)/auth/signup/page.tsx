@@ -18,12 +18,19 @@ import { requestOtp, verifyOtp, googleSignIn } from "@/lib/auth.service";
 import { GoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import { useCooldown } from "@/lib/useCooldown";
+import { useAuthStore } from "@/lib/auth.store"; // ✅ use persisted Zustand store
 
 type SignupForm = z.infer<typeof SignupSchema>;
 type OtpForm = z.infer<typeof OtpSchema>;
 
+function nextRoute(user: { role: "learner" | "admin"; profileComplete?: boolean }) {
+  if (user.role === "admin") return "/admin";
+  return user.profileComplete ? "/dashboard" : "/profile/setup/step-1";
+}
+
 export default function SignupPage() {
   const router = useRouter();
+  const setAuth = useAuthStore((s) => s.setAuth); // ✅ persisted access token
   const [stage, setStage] = useState<"signup" | "otp">("signup");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -67,8 +74,13 @@ export default function SignupPage() {
   async function onVerifyOtp(values: OtpForm) {
     try {
       const res = await verifyOtp(email, values.otp);
+
+      // ✅ Save access token in Zustand (persisted) so protected routes can read it
+      if (!res?.accessToken) throw new Error("Missing access token");
+      setAuth(res.accessToken);
+
       toast.success(`Welcome, ${name || "Learner"}!`);
-      router.push(res.user.role === "admin" ? "/admin" : "/app");
+      router.replace(nextRoute(res.user));
     } catch (e: any) {
       toast.error(e.message || "Invalid OTP");
     }
@@ -208,8 +220,13 @@ export default function SignupPage() {
                   try {
                     if (!cred.credential) throw new Error("Missing Google credential");
                     const res = await googleSignIn(cred.credential);
+
+                    // ✅ Save access token in Zustand (persisted)
+                    if (!res?.accessToken) throw new Error("Missing access token");
+                    setAuth(res.accessToken);
+
                     toast.success("Signed up with Google!");
-                    router.push(res.user.role === "admin" ? "/admin" : "/app");
+                    router.replace(nextRoute(res.user));
                   } catch (e: any) {
                     toast.error(e.message || "Google sign-in failed");
                   }

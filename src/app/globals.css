@@ -1,57 +1,224 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0f;
+  --foreground: #ededed;
+
+  --accent: #f97316;
+  --accent-2: #fb923c;
+
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.10);
+
+  --shadow-1: 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-2: 0 30px 120px rgba(0, 0, 0, 0.65);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #171717;
+
+    --surface: rgba(0, 0, 0, 0.04);
+    --surface-2: rgba(0, 0, 0, 0.02);
+    --border: rgba(0, 0, 0, 0.10);
+
+    --shadow-2: 0 24px 80px rgba(0, 0, 0, 0.12);
   }
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(249, 115, 22, 0.25);
+}
+
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-1), var(--shadow-2);
+}
+
+.focus-ring:focus-within {
+  border-color: rgba(249, 115, 22, 0.35);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.12), var(--shadow-1), var(--shadow-2);
 }
 
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(18px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes shake {
-  0%,100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
 }
 
 @keyframes shimmer {
-  from { background-position: 200% 0; }
-  to { background-position: -200% 0; }
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes logoFloat {
-  0%,100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 @keyframes nebulaDrift {
-  0%,100% { transform: translate3d(0,0,0) rotate(0deg); }
-  50% { transform: translate3d(18px,-12px,0) rotate(10deg); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(18px, -12px, 0) rotate(10deg);
+  }
+}
+
+@keyframes blob {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(40px, -20px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 30px) scale(0.98);
+  }
+}
+
+@keyframes blob2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-30px, 10px) scale(1.04);
+  }
+  66% {
+    transform: translate(20px, -25px) scale(0.99);
+  }
+}
+
+@keyframes blob3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(20px, 30px) scale(1.03);
+  }
+  66% {
+    transform: translate(-35px, -10px) scale(1);
+  }
+}
+
+.animate-cardIn {
+  animation: cardIn 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.animate-shake {
+  animation: shake 320ms ease-in-out;
+}
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.animate-fadeUp {
+  animation: fadeUp 420ms ease-out both;
+}
+.animate-logoFloat {
+  animation: logoFloat 2.8s ease-in-out infinite;
+}
+.animate-nebula {
+  animation: nebulaDrift 10s ease-in-out infinite;
+}
+.animate-blob {
+  animation: blob 10s ease-in-out infinite;
+}
+.animate-blob2 {
+  animation: blob2 12s ease-in-out infinite;
+}
+.animate-blob3 {
+  animation: blob3 14s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cardIn,
+  .animate-shake,
+  .animate-shimmer,
+  .animate-fadeUp,
+  .animate-logoFloat,
+  .animate-nebula,
+  .animate-blob,
+  .animate-blob2,
+  .animate-blob3 {
+    animation: none !important;
+  }
+}
+
+@keyframes shootingStar {
+  0% { transform: translate3d(-240px, 0, 0) rotate(var(--r, -18deg)); opacity: 0; }
+  10% { opacity: 1; }
+  55% { opacity: 0; }
+  100% { transform: translate3d(820px, 0, 0) rotate(var(--r, -18deg)); opacity: 0; }
 }

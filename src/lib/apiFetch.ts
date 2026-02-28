@@ -1,4 +1,5 @@
 import { useAuthStore } from "./auth.store";
+import { endpoints } from "./endpoints";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL!;
 
@@ -17,21 +18,19 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
 
   const headers = new Headers(options.headers || {});
 
-  let body = options.body as any;
-  const isBodyObject =
+  let body: any = options.body;
+  const isPlainObject =
     body &&
     typeof body === "object" &&
     !(body instanceof FormData) &&
     !(body instanceof Blob) &&
     !(body instanceof ArrayBuffer);
 
-  if (isBodyObject) {
+  if (isPlainObject) {
     body = JSON.stringify(body);
     if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
-  } else {
-    if (typeof body === "string" && !headers.has("Content-Type")) {
-      headers.set("Content-Type", "application/json");
-    }
+  } else if (typeof body === "string" && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
 
   if (authEnabled && accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
@@ -44,7 +43,7 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
   });
 
   if (res.status === 401 && retryOn401 && authEnabled) {
-    const refreshed = await fetch(`${BASE}/auth/refresh`, {
+    const refreshed = await fetch(`${BASE}${endpoints.auth.refresh}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -52,10 +51,7 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
 
     if (refreshed.ok) {
       const refreshPayload = await readJson<any>(refreshed);
-
-      const newToken =
-        refreshPayload?.data?.accessToken ??
-        refreshPayload?.accessToken;
+      const newToken = refreshPayload?.data?.accessToken;
 
       if (typeof newToken === "string" && newToken.length > 10) {
         setAuth(newToken);
@@ -75,9 +71,7 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
       payload?.data?.message ||
       payload?.data?.error ||
       `Request failed (${res.status})`;
-
-    const msg = typeof rawMsg === "string" ? rawMsg : JSON.stringify(rawMsg);
-    throw new Error(msg);
+    throw new Error(typeof rawMsg === "string" ? rawMsg : JSON.stringify(rawMsg));
   }
 
   if (payload && payload.ok === true && "data" in payload) {
