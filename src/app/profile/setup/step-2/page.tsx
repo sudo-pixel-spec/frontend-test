@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getProfileDraft, setProfileDraft } from "@/lib/profileDraft";
 import OnboardingShell from "@/components/onboarding/OnboardingShell";
 import ActionButton from "@/components/onboarding/ActionButton";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Lock } from "lucide-react";
 
 const MAP = {
   "8": "CBSE_STD_8",
@@ -34,6 +34,7 @@ export default function Step2() {
           <ActionButton variant="ghost" onClick={() => router.back()}>
             Back
           </ActionButton>
+
           <ActionButton
             onClick={() => {
               setProfileDraft({ standard: MAP[standard] });
@@ -47,31 +48,49 @@ export default function Step2() {
     >
       <div className="grid grid-cols-3 gap-3">
         {(["8", "9", "10"] as const).map((s) => {
-          const selected = standard === s;
           const locked = s !== "8";
+          const selected = standard === s;
 
           return (
             <button
               key={s}
-              onClick={() => setStandard(s)}
+              disabled={locked}
+              onClick={() => {
+                if (!locked) setStandard(s);
+              }}
               className={[
                 "relative rounded-xl border px-4 py-4 text-left transition",
-                selected
+                locked
+                  ? "bg-black/10 border-white/5 text-white/40 cursor-not-allowed opacity-60"
+                  : selected
                   ? "bg-white/90 text-black border-white/60"
                   : "bg-black/20 border-white/10 text-white hover:bg-white/5",
               ].join(" ")}
             >
               <div className="text-sm font-semibold">Std {s}</div>
-              <div className={selected ? "text-xs opacity-80" : "text-xs text-white/60"}>
+
+              <div
+                className={
+                  selected
+                    ? "text-xs opacity-80"
+                    : "text-xs text-white/60"
+                }
+              >
                 {locked ? "Coming soon" : "Unlocked"}
               </div>
 
-              {selected ? (
+              {selected && !locked && (
                 <div className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/10 px-2 py-1 text-[10px] font-semibold">
                   <Sparkles size={12} />
                   Selected
                 </div>
-              ) : null}
+              )}
+
+              {locked && (
+                <div className="absolute right-3 top-3 text-white/40">
+                  <Lock size={14} />
+                </div>
+              )}
             </button>
           );
         })}

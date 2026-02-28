@@ -4,22 +4,31 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/apiFetch";
 import { endpoints } from "@/lib/endpoints";
-import { clearProfileDraft, getProfileDraft, setProfileDraft } from "@/lib/profileDraft";
+import {
+  clearProfileDraft,
+  getProfileDraft,
+  setProfileDraft,
+} from "@/lib/profileDraft";
 import OnboardingShell from "@/components/onboarding/OnboardingShell";
 import ActionButton from "@/components/onboarding/ActionButton";
-import { Globe2, Rocket } from "lucide-react";
+import { Globe2, Rocket, Lock } from "lucide-react";
 
 export default function Step3() {
   const router = useRouter();
   const draft = getProfileDraft();
 
-  const [timezone, setTimezone] = useState(draft.timezone ?? "Asia/Kolkata");
+  const detectedTZ =
+    Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Asia/Kolkata";
+
+  const [timezone] = useState(draft.timezone ?? detectedTZ);
+
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   async function finish() {
     setErr(null);
-    const tz = timezone.trim();
+
+    const tz = (timezone ?? "").trim();
     if (tz.length < 3) return setErr("Enter a valid timezone.");
 
     setLoading(true);
@@ -28,7 +37,8 @@ export default function Step3() {
       const merged = getProfileDraft();
 
       if (!merged.fullName) throw new Error("Name missing (go back to Step 1)");
-      if (!merged.standard) throw new Error("Standard missing (go back to Step 2)");
+      if (!merged.standard)
+        throw new Error("Standard missing (go back to Step 2)");
 
       await apiFetch(endpoints.user.profile, {
         method: "PATCH",
@@ -68,14 +78,16 @@ export default function Step3() {
       }
     >
       <label className="block text-sm text-white/70">Timezone</label>
-      <div className="mt-2 flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3 focus-within:border-orange-400/40 focus-within:ring-2 focus-within:ring-orange-400/10 transition">
+
+      <div className="mt-2 flex items-center gap-3 rounded-xl border border-white/10 bg-black/10 px-4 py-3 opacity-80">
         <Globe2 size={16} className="text-white/55" />
         <input
-          className="w-full bg-transparent outline-none placeholder:text-white/30"
+          readOnly
+          className="w-full bg-transparent outline-none text-white/70 cursor-default"
           value={timezone}
-          onChange={(e) => setTimezone(e.target.value)}
           placeholder="Asia/Kolkata"
         />
+        <Lock size={14} className="text-white/35" />
       </div>
 
       {err ? <p className="mt-3 text-sm text-red-400">{err}</p> : null}
