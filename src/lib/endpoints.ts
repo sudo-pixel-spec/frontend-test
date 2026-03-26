@@ -27,6 +27,8 @@ export const endpoints = {
     units: "/units",
     chapters: "/chapters",
     lessons: "/lessons",
+    lessonById: (id: string) => `/lessons/${id}`,
+    quizForLesson: (lessonId: string) => `/attempts/quiz/${lessonId}`,
   },
 
   attempt: {
