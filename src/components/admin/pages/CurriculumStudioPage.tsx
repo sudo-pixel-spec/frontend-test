@@ -218,7 +218,6 @@ export default function CurriculumStudioPage() {
     return () => {
       if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function selectStandard(id: string) {

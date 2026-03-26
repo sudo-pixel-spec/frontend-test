@@ -181,7 +181,7 @@ export default function SettingsPage() {
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar text-sm text-white/60 space-y-4">
                 <p>
                   This is a placeholder text for the <strong>{selectedPolicy}</strong>. 
-                  In a real application, this would contain the actual legal text governing the use of the application.
+                  Hmm. Lets add placeholers ig.
                 </p>
                 <p>
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 

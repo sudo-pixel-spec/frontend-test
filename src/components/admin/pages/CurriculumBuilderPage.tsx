@@ -179,7 +179,6 @@ export default function CurriculumBuilderPage() {
 
   useEffect(() => {
     refreshAll().catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function selectStandard(id: string) {

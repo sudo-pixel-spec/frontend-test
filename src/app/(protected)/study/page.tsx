@@ -9,6 +9,7 @@ import { useAuthStore } from "@/lib/auth.store";
 
 type Lesson = { _id: string; title: string; orderIndex: number; published: boolean; videoUrl?: string; bullets?: string[]; };
 type Chapter = { _id: string; name: string; orderIndex: number; lessons?: Lesson[]; };
+type Unit = { _id: string; name: string; orderIndex: number; };
 type Subject = { _id: string; name: string; orderIndex: number; };
 
 const LESSON_XP = 100;
@@ -77,7 +78,7 @@ function LessonRow({ lesson, subjectName, chapterName }: { lesson: Lesson; subje
   );
 }
 
-function ChapterSection({ chapter, subjectName, subjectId }: { chapter: Chapter; subjectName: string; subjectId: string }) {
+function ChapterSection({ chapter, subjectName }: { chapter: Chapter; subjectName: string }) {
   const [open, setOpen] = useState(false);
 
   const { data: lessons, isLoading } = useQuery({
@@ -138,20 +139,76 @@ function ChapterSection({ chapter, subjectName, subjectId }: { chapter: Chapter;
   );
 }
 
-function SubjectSection({ subject }: { subject: Subject }) {
+function UnitSection({ unit, subjectName }: { unit: Unit; subjectName: string }) {
   const [open, setOpen] = useState(false);
 
   const { data: chaptersRaw, isLoading } = useQuery({
-    queryKey: ["chapters", subject._id],
-    queryFn: () =>
-      apiFetch<any>(`${endpoints.curriculum.chapters}?subjectId=${subject._id}&limit=200`).then(
-        (res: any) => (Array.isArray(res) ? res : res?.data ?? res?.chapters ?? []) as Chapter[]
-      ),
+    queryKey: ["chapters", unit._id],
+    queryFn: () => apiFetch<any>(`${endpoints.curriculum.chapters}?unitId=${unit._id}&limit=200`).then(
+      (res: any) => (Array.isArray(res) ? res : res?.data ?? res?.chapters ?? []) as Chapter[]
+    ),
     enabled: open,
     staleTime: 5 * 60_000,
   });
 
   const chapters = (chaptersRaw ?? []).sort((a: Chapter, b: Chapter) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
+
+  return (
+    <div className="mb-3 ml-2 border-l-2 border-white/5 pl-4">
+      <motion.button
+        whileHover={{ x: 2 }}
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-3 p-3 rounded-2xl text-left"
+        style={{ background: open ? "rgba(168,85,247,0.07)" : "transparent" }}
+      >
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0"
+             style={{ background: open ? "rgba(168,85,247,0.15)" : "rgba(255,255,255,0.04)" }}>
+          {open ? "▼" : "▶"}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white truncate">{unit.name}</p>
+        </div>
+      </motion.button>
+
+      <AnimatePresence>
+        {open && (
+           <motion.div
+           initial={{ height: 0, opacity: 0 }}
+           animate={{ height: "auto", opacity: 1 }}
+           exit={{ height: 0, opacity: 0 }}
+           className="overflow-hidden mt-2 space-y-2">
+           {isLoading ? (
+             Array(2).fill(0).map((_, i) => (
+               <div key={i} className="h-12 rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.04)" }} />
+             ))
+           ) : chapters.length === 0 ? (
+             <p className="text-xs text-white/25 px-4 py-2">No chapters available.</p>
+           ) : (
+             chapters.map((ch: Chapter) => (
+               <ChapterSection key={ch._id} chapter={ch} subjectName={subjectName} />
+             ))
+           )}
+           </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function SubjectSection({ subject }: { subject: Subject }) {
+  const [open, setOpen] = useState(false);
+
+  const { data: unitsRaw, isLoading } = useQuery({
+    queryKey: ["units", subject._id],
+    queryFn: () =>
+      apiFetch<any>(`${endpoints.curriculum.units}?subjectId=${subject._id}&limit=200`).then(
+        (res: any) => (Array.isArray(res) ? res : res?.data ?? res?.units ?? []) as Unit[]
+      ),
+    enabled: open,
+    staleTime: 5 * 60_000,
+  });
+
+  const units = (unitsRaw ?? []).sort((a: Unit, b: Unit) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
 
   return (
     <motion.div
@@ -173,7 +230,7 @@ function SubjectSection({ subject }: { subject: Subject }) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-black text-white">{subject.name}</p>
-          <p className="text-xs text-white/30 mt-0.5">Tap to explore chapters</p>
+          <p className="text-xs text-white/30 mt-0.5">Tap to explore units</p>
         </div>
         <motion.div animate={{ rotate: open ? 90 : 0 }} className="text-white/30 text-2xl flex-shrink-0">›</motion.div>
       </motion.button>
@@ -191,11 +248,11 @@ function SubjectSection({ subject }: { subject: Subject }) {
                   Array(3).fill(0).map((_, i) => (
                     <div key={i} className="h-12 rounded-2xl mb-2 animate-pulse" style={{ background: "rgba(255,255,255,0.04)" }} />
                   ))
-                ) : chapters.length === 0 ? (
-                  <p className="text-sm text-white/30 py-4 text-center">No chapters available yet.</p>
+                ) : units.length === 0 ? (
+                  <p className="text-sm text-white/30 py-4 text-center">No units available yet.</p>
                 ) : (
-                  chapters.map((ch: Chapter) => (
-                    <ChapterSection key={ch._id} chapter={ch} subjectName={subject.name} subjectId={subject._id} />
+                  units.map((unit: Unit) => (
+                    <UnitSection key={unit._id} unit={unit} subjectName={subject.name} />
                   ))
                 )}
               </div>
@@ -231,7 +288,7 @@ export default function StudyPage() {
         <h1 className="text-3xl font-black text-white">📚 Study</h1>
         <p className="text-white/40 text-sm mt-1">
           {standard
-            ? `Your curriculum · ${standard.replace("CBSE_", "").replace("_", " ")}`
+            ? `Your curriculum · ${standard?.replace("CBSE_", "")?.replace("_", " ")}`
             : "Browse all subjects below"}
         </p>
       </div>

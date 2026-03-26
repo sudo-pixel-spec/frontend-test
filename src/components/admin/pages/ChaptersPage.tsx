@@ -32,7 +32,6 @@ export default function ChaptersPage() {
 
   useEffect(() => {
     loadUnits().catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const unitOptions = useMemo(() => {
