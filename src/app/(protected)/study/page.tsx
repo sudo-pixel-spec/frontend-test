@@ -311,9 +311,12 @@ export default function StudyPage() {
           <p className="text-white/60 font-semibold">No subjects found</p>
           <p className="text-white/30 text-sm mt-1">
             {standard
-              ? "No subjects have been published for your class yet."
+              ? `No subjects have been published for "${standard}" yet.`
               : "Complete onboarding to see your curriculum."}
           </p>
+          {standard && (
+             <p className="text-[10px] text-white/10 mt-4 uppercase tracking-tighter">Debug: {standard}</p>
+          )}
         </div>
       ) : (
         subjects.map((sub: Subject) => (
