@@ -38,13 +38,13 @@ export default function LessonPage() {
   // 1. Fetch Lesson Data
   const lessonQuery = useQuery({
     queryKey: ["lesson", id],
-    queryFn: () => apiFetch<any>(endpoints.curriculum.lessonById(id as string)).then(res => res.data as Lesson),
+    queryFn: () => apiFetch<Lesson>(endpoints.curriculum.lessonById(id as string)),
   });
 
   // 2. Fetch Quiz Data
   const quizQuery = useQuery({
     queryKey: ["quiz", id],
-    queryFn: () => apiFetch<any>(endpoints.curriculum.quizForLesson(id as string)).then(res => res.data as Quiz),
+    queryFn: () => apiFetch<Quiz>(endpoints.curriculum.quizForLesson(id as string)),
   });
 
   // 3. Submit Mutation
